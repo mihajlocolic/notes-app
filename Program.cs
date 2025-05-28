@@ -10,5 +10,4 @@ app.MapControllerRoute(
     name: "notes",
     pattern: "{controller=NoteController}/{action=GetAllNotes}");
 
-
 app.Run();

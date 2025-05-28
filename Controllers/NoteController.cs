@@ -43,16 +43,37 @@ namespace NotesAPI.Controllers
             return "New note created.";
         }
 
-        [HttpPut("/{id}")]
-        public string UpdateNote()
+        [HttpPut]
+        [Route("/notes/{id}")]
+        public string UpdateNote(int id, [FromBody] Note note)
         {
-            return "Should update the note";
+            if (id > 0)
+            {
+                List<Note> notes = notesDataHandler.ReadNotesFromJson();
+                int noteIdx = notes.FindIndex(x => x.Id == id);
+                notes[noteIdx].Title = note.Title;
+                notes[noteIdx].Content = note.Content;
+                notes[noteIdx].CreatedAt = note.CreatedAt;
+
+                notesDataHandler.WriteNotesToJson(notes);
+
+                return "Note updated";
+            }
+
+            return "Id must be positive number";
         }
 
-        [HttpDelete("/{id}")]
-        public string DeleteNote()
+        [HttpDelete("/notes/{id}")]
+        public string DeleteNote(int id)
         {
-            return "Should delete the note";
+            List<Note> notes = notesDataHandler.ReadNotesFromJson();
+            int noteIdx = notes.FindIndex(x => x.Id == id);
+
+            notes.RemoveAt(noteIdx);
+
+            notesDataHandler.WriteNotesToJson(notes);
+
+            return "Note deleted.";
         }
 
     }

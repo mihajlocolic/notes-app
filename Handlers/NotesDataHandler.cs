@@ -6,7 +6,7 @@ namespace NotesAPI.Handlers
 {
     public class NotesDataHandler
     {
-        private string JsonPath = "D:\\Programming\\csharp-projects\\NotesAPI\\notes.json";
+        private string JsonPath = "notes.json";
 
         public List<Note> ReadNotesFromJson()
         {
@@ -51,6 +51,8 @@ namespace NotesAPI.Handlers
                 Console.WriteLine(FileNotFoundException.Message);
             }
         }
+
+    
     }
 }
 
