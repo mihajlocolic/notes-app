@@ -8,32 +8,31 @@ namespace NotesAPI.Handlers
     {
         private string JsonPath = "notes.json";
 
+
         public List<Note> ReadNotesFromJson()
         {
-            List<Note>? n = new List<Note>();
-
             try
             {
+                NotesFileCheck(JsonPath);
                 StreamReader sr = new StreamReader(JsonPath);
                 string json = sr.ReadToEnd();
-                n = JsonSerializer.Deserialize<List<Note>>(json);
+                List<Note>? notes = JsonSerializer.Deserialize<List<Note>>(json);
                 sr.Close();
-            }
-            catch (FileNotFoundException FileNotFoundException)
-            {
-                Console.WriteLine(FileNotFoundException.Message);
-            }
 
-
-            if (n != null)
-            {
-                return n;
+                if (notes != null)
+                {
+                    return notes;
+                }
+                else
+                {
+                    throw new NullReferenceException("There was nothing to read from the file and notes list is null.");
+                }
             }
-            else
+            catch (Exception exc)
             {
-                throw new NullReferenceException("ReadNotesFromJson(): Returned list of notes was null.");
+                Console.WriteLine(exc.Message);
+                throw;
             }
-
         }
 
 
@@ -41,18 +40,29 @@ namespace NotesAPI.Handlers
         {
             try
             {
+                NotesFileCheck(JsonPath);
                 StreamWriter sw = new StreamWriter(JsonPath);
                 var json = JsonSerializer.Serialize(notes);
                 sw.WriteLine(json);
                 sw.Close();
             }
-            catch (FileNotFoundException FileNotFoundException)
+            catch (Exception exc)
             {
-                Console.WriteLine(FileNotFoundException.Message);
+                Console.WriteLine(exc.Message);
+                throw;
             }
         }
 
-    
+
+         public void NotesFileCheck(string filePath)
+        {
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException("Notes file doesn't exist!");
+            }
+        }
+
+
     }
 }
 

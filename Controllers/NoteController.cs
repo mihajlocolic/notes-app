@@ -12,6 +12,7 @@ namespace NotesAPI.Controllers
         NotesDataHandler notesDataHandler = new NotesDataHandler();
 
         [HttpGet]
+        [Route("/notes")]
         public List<Note> GetAllNotes()
         {
             return notesDataHandler.ReadNotesFromJson();
@@ -22,15 +23,22 @@ namespace NotesAPI.Controllers
         public Note GetNote(int id)
         {
             List<Note> notes = notesDataHandler.ReadNotesFromJson();
-            Note? note = notes.Find(n => n.Id == id);
-
-            if (note != null)
+            try
             {
-                return note;
+                Note? note = notes.Find(n => n.Id == id);
+                if (note != null)
+                {
+                    return note;
+                }
+                else
+                {
+                    throw new NullReferenceException($"Note with id {id} doesn't exist!");
+                }
             }
-            else
+            catch (Exception e)
             {
-                throw new NullReferenceException($"Searched note id {id} was null.");
+                Console.WriteLine(e.Message);
+                throw;
             }
         }
 
