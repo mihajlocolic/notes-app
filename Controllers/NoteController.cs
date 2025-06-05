@@ -13,27 +13,27 @@ namespace NotesAPI.Controllers
 
         [HttpGet]
         [Route("/notes")]
-        public List<Note> GetAllNotes()
+        public IActionResult GetAllNotes()
         {
-            return notesDataHandler.ReadNotesFromJson();
+            List<Note> notes = _notesDataHandler.ReadNotesFromJson();
+
+            if (notes.Count == 0) return NoContent();
+            return Ok(notes);
         }
 
         [HttpGet]
         [Route("/notes/{id}")]
-        public Note GetNote(int id)
+        public IActionResult GetNote(int id)
         {
-            List<Note> notes = notesDataHandler.ReadNotesFromJson();
+            List<Note> notes = _notesDataHandler.ReadNotesFromJson();
             try
             {
                 Note? note = notes.Find(n => n.Id == id);
                 if (note != null)
                 {
-                    return note;
+                    return Ok(note);
                 }
-                else
-                {
-                    throw new NullReferenceException($"Note with id {id} doesn't exist!");
-                }
+                return NotFound(new NullReferenceException($"Note with id {id} doesn't exist!"));
             }
             catch (Exception e)
             {
@@ -42,46 +42,71 @@ namespace NotesAPI.Controllers
             }
         }
 
-        [HttpPost("/notes")]
-        public string CreateNote(Note note)
+        [HttpPost]
+        [Route("/notes")]
+        public IActionResult CreateNote(Note? note)
         {
-            List<Note> notes = notesDataHandler.ReadNotesFromJson();
-            notes.Add(note);
-            notesDataHandler.WriteNotesToJson(notes);
-            return "New note created.";
+            try {
+                List<Note> notes = _notesDataHandler.ReadNotesFromJson();
+                if (note == null) return BadRequest(new NullReferenceException("Note object was null."));
+                notes.Add(note);
+                _notesDataHandler.WriteNotesToJson(notes);
+                return Ok("New note created.");
+
+            } catch (Exception exc) {
+                Console.WriteLine(exc.Message);
+                throw;
+            }
+            
         }
 
         [HttpPut]
         [Route("/notes/{id}")]
-        public string UpdateNote(int id, [FromBody] Note note)
+        public IActionResult UpdateNote(int id, [FromBody] Note note)
         {
-            if (id > 0)
-            {
-                List<Note> notes = notesDataHandler.ReadNotesFromJson();
+            try {
+
+                if (id < 1) return BadRequest(new Exception("Id must be positive number."));
+                
+                List<Note> notes = _notesDataHandler.ReadNotesFromJson();
+                if (notes.Find(n => n.Id == note.Id ) == null) return BadRequest(new Exception("Note not found."));
+
                 int noteIdx = notes.FindIndex(x => x.Id == id);
                 notes[noteIdx].Title = note.Title;
                 notes[noteIdx].Content = note.Content;
                 notes[noteIdx].CreatedAt = note.CreatedAt;
 
-                notesDataHandler.WriteNotesToJson(notes);
+                _notesDataHandler.WriteNotesToJson(notes);
 
-                return "Note updated";
+                return Ok("Note updated.");
+                
+
+            } catch (Exception exc) {
+                Console.WriteLine(exc.Message);
+                throw;
             }
 
-            return "Id must be positive number";
+            
         }
 
-        [HttpDelete("/notes/{id}")]
-        public string DeleteNote(int id)
+        [HttpDelete]
+        [Route("/notes/{id}")]
+        public IActionResult DeleteNote(int id)
         {
-            List<Note> notes = notesDataHandler.ReadNotesFromJson();
-            int noteIdx = notes.FindIndex(x => x.Id == id);
+            try {
+                if (id < 1) return BadRequest(new Exception("Id must be positive number."));
+                List<Note> notes = _notesDataHandler.ReadNotesFromJson();
+                int noteIdx = notes.FindIndex(x => x.Id == id);
+                if (noteIdx.Equals(0)) return BadRequest(new Exception("Note not found."));
+                notes.RemoveAt(noteIdx);
+                _notesDataHandler.WriteNotesToJson(notes);
+                return Ok("Note deleted.");
 
-            notes.RemoveAt(noteIdx);
-
-            notesDataHandler.WriteNotesToJson(notes);
-
-            return "Note deleted.";
+            } catch (Exception exc) {
+                Console.WriteLine(exc.Message);
+                throw;
+            }
+            
         }
 
     }
