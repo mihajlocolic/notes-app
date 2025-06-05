@@ -9,7 +9,7 @@ namespace NotesAPI.Controllers
     [Route("notes")]
     public class NoteController : Controller
     {
-        NotesDataHandler _notesDataHandler = new NotesDataHandler();
+        private NotesDataHandler _notesDataHandler = new NotesDataHandler();
 
         [HttpGet]
         [Route("/notes")]
